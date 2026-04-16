@@ -374,6 +374,32 @@
   }
   .toggle-label { display: flex; align-items: center; gap: 6px; cursor: pointer; }
   .toggle-label input[type=checkbox] { accent-color: var(--accent); width: 14px; height: 14px; cursor: pointer; }
+  /* FOOTER */
+.site-footer {
+  margin-top: 3rem;
+  padding: 1.2rem;
+  text-align: center;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 0.8rem;
+  letter-spacing: 0.05em;
+}
+
+.site-footer p {
+  background: linear-gradient(135deg, #93c5fd, #67e8f9);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.site-footer p {
+  animation: glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes glow {
+  from { opacity: 0.7; }
+  to { opacity: 1; }
+}
 </style>
 </head>
 <body>
@@ -429,6 +455,9 @@
   </div>
   <div id="questions-list"></div>
 </div>
+<footer class="site-footer">
+  <p>Made with ❤️ by <strong>nitin</strong></p>
+</footer>
 
 <script>
 const QUESTIONS = [
