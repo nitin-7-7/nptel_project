@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NPTEL Environmental Engineering Quiz</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0f1e;
+    --surface: #111827;
+    --surface2: #1a2235;
+    --border: rgba(99,179,237,0.15);
+    --accent: #3b82f6;
+    --accent2: #06b6d4;
+    --success: #10b981;
+    --danger: #ef4444;
+    --warning: #f59e0b;
+    --text: #f1f5f9;
+    --muted: #94a3b8;
+    --tag-bg: rgba(59,130,246,0.12);
+    --tag-text: #93c5fd;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Sora', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    line-height: 1.6;
+  }
+
+  /* HEADER */
+  header {
+    background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #0f172a 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 2rem 1.5rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    top: -60px; left: 50%;
+    transform: translateX(-50%);
+    width: 300px; height: 300px;
+    background: radial-gradient(circle, rgba(59,130,246,0.15) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .header-badge {
+    display: inline-block;
+    background: var(--tag-bg);
+    color: var(--tag-text);
+    border: 1px solid rgba(59,130,246,0.3);
+    border-radius: 999px;
+    font-size: 0.7rem;
+    font-family: 'Space Mono', monospace;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 4px 14px;
+    margin-bottom: 0.75rem;
+  }
+  header h1 {
+    font-size: clamp(1.4rem, 4vw, 2.2rem);
+    font-weight: 700;
+    background: linear-gradient(135deg, #93c5fd, #67e8f9);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.4rem;
+  }
+  header p {
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+
+  /* STATS BAR */
+  #stats-bar {
+    display: flex;
+    gap: 12px;
+    padding: 1rem 1.5rem;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .stat-pill {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.8rem;
+    color: var(--muted);
+  }
+  .stat-pill span { color: var(--text); font-weight: 600; font-family: 'Space Mono', monospace; }
+  .progress-wrap {
+    flex: 1; min-width: 160px;
+    height: 4px;
+    background: var(--surface2);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 999px;
+    transition: width 0.4s ease;
+  }
+
+  /* FILTER BAR */
+  #filter-bar {
+    display: flex;
+    gap: 8px;
+    padding: 1rem 1.5rem;
+    flex-wrap: wrap;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+  }
+  .filter-btn {
+    padding: 5px 14px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    font-size: 0.75rem;
+    font-family: 'Sora', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .filter-btn.active {
+    background: var(--tag-bg);
+    border-color: rgba(59,130,246,0.4);
+    color: var(--tag-text);
+  }
+  .filter-btn:hover { border-color: rgba(59,130,246,0.4); color: var(--text); }
+
+  /* MAIN */
+  #quiz-container {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 1.5rem;
+  }
+
+  /* QUESTION CARD */
+  .q-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 1.25rem;
+    transition: border-color 0.2s;
+    position: relative;
+  }
+  .q-card.answered { border-color: rgba(99,179,237,0.25); }
+  .q-card.correct { border-color: rgba(16,185,129,0.35); background: rgba(16,185,129,0.04); }
+  .q-card.wrong { border-color: rgba(239,68,68,0.35); background: rgba(239,68,68,0.04); }
+
+  .q-meta {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 0.85rem;
+    flex-wrap: wrap;
+  }
+  .q-num {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--accent2);
+    background: rgba(6,182,212,0.1);
+    border: 1px solid rgba(6,182,212,0.2);
+    padding: 2px 8px;
+    border-radius: 999px;
+  }
+  .q-assign {
+    font-size: 0.7rem;
+    color: var(--muted);
+    background: var(--surface2);
+    padding: 2px 8px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+  }
+
+  .q-text {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 1rem;
+    line-height: 1.65;
+  }
+
+  .options { display: flex; flex-direction: column; gap: 8px; }
+
+  .option-btn {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--text);
+    font-size: 0.88rem;
+    font-family: 'Sora', sans-serif;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.18s;
+    line-height: 1.5;
+  }
+  .option-btn:hover:not(:disabled) {
+    border-color: rgba(59,130,246,0.5);
+    background: rgba(59,130,246,0.07);
+  }
+  .option-btn .opt-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--accent);
+    min-width: 18px;
+    margin-top: 1px;
+    font-weight: 700;
+  }
+  .option-btn.selected { border-color: rgba(59,130,246,0.6); background: rgba(59,130,246,0.1); }
+  .option-btn.correct-ans {
+    border-color: rgba(16,185,129,0.6) !important;
+    background: rgba(16,185,129,0.1) !important;
+    color: #6ee7b7 !important;
+  }
+  .option-btn.wrong-ans {
+    border-color: rgba(239,68,68,0.6) !important;
+    background: rgba(239,68,68,0.1) !important;
+    color: #fca5a5 !important;
+  }
+  .option-btn:disabled { cursor: default; }
+
+  /* RESULT BADGE */
+  .result-badge {
+    margin-top: 10px;
+    display: none;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 5px 12px;
+    border-radius: 999px;
+    width: fit-content;
+  }
+  .result-badge.show { display: flex; }
+  .result-badge.ok { background: rgba(16,185,129,0.12); color: #6ee7b7; border: 1px solid rgba(16,185,129,0.3); }
+  .result-badge.no { background: rgba(239,68,68,0.12); color: #fca5a5; border: 1px solid rgba(239,68,68,0.3); }
+
+  /* SCORE PANEL */
+  #score-panel {
+    background: linear-gradient(135deg, rgba(59,130,246,0.1), rgba(6,182,212,0.1));
+    border: 1px solid rgba(59,130,246,0.3);
+    border-radius: 16px;
+    padding: 2rem;
+    text-align: center;
+    margin-bottom: 2rem;
+    display: none;
+  }
+  #score-panel.visible { display: block; }
+  #score-panel h2 { font-size: 1.5rem; margin-bottom: 0.5rem; }
+  #score-big {
+    font-size: 4rem;
+    font-weight: 700;
+    font-family: 'Space Mono', monospace;
+    background: linear-gradient(135deg, #93c5fd, #67e8f9);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  #score-label { color: var(--muted); margin-bottom: 1.5rem; }
+  .score-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin-bottom: 1.5rem; }
+  .score-stat { background: var(--surface); border-radius: 12px; padding: 1rem; }
+  .score-stat .val { font-size: 1.5rem; font-weight: 700; font-family: 'Space Mono', monospace; }
+  .score-stat .lbl { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+  .score-stat.g .val { color: #10b981; }
+  .score-stat.r .val { color: #ef4444; }
+  .score-stat.b .val { color: #3b82f6; }
+
+  /* BUTTONS */
+  .btn {
+    padding: 10px 24px;
+    border-radius: 999px;
+    border: none;
+    font-family: 'Sora', sans-serif;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: white;
+  }
+  .btn-primary:hover { opacity: 0.88; transform: translateY(-1px); }
+  .btn-outline {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+  }
+  .btn-outline:hover { border-color: rgba(59,130,246,0.4); color: var(--text); }
+
+  .action-row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 1rem; }
+
+  /* JUMP NAV */
+  #jump-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 1rem 1.5rem;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s ease;
+  }
+  #jump-nav.open { max-height: 300px; }
+  .jump-dot {
+    width: 28px; height: 28px;
+    border-radius: 6px;
+    font-size: 0.65rem;
+    font-family: 'Space Mono', monospace;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .jump-dot:hover { border-color: var(--accent); color: var(--accent); }
+  .jump-dot.answered { background: rgba(59,130,246,0.15); border-color: rgba(59,130,246,0.4); color: var(--accent2); }
+  .jump-dot.correct { background: rgba(16,185,129,0.15); border-color: rgba(16,185,129,0.4); color: #10b981; }
+  .jump-dot.wrong { background: rgba(239,68,68,0.15); border-color: rgba(239,68,68,0.4); color: #ef4444; }
+
+  #jump-toggle {
+    font-size: 0.75rem;
+    color: var(--muted);
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: 'Sora', sans-serif;
+    padding: 0.5rem 1.5rem;
+    display: block;
+    width: 100%;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  #jump-toggle:hover { color: var(--text); }
+
+  @media (max-width: 600px) {
+    .score-grid { grid-template-columns: repeat(3,1fr); }
+    #score-big { font-size: 3rem; }
+  }
+
+  .no-results {
+    text-align: center;
+    padding: 4rem 1rem;
+    color: var(--muted);
+  }
+
+  .check-icon::before { content: '✓ '; }
+  .cross-icon::before { content: '✗ '; }
+
+  .mode-row {
+    display: flex; gap: 8px; align-items: center;
+    padding: 0.75rem 1.5rem;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    font-size: 0.8rem;
+    color: var(--muted);
+    flex-wrap: wrap;
+  }
+  .toggle-label { display: flex; align-items: center; gap: 6px; cursor: pointer; }
+  .toggle-label input[type=checkbox] { accent-color: var(--accent); width: 14px; height: 14px; cursor: pointer; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-badge">IIT Kharagpur · NPTEL</div>
+  <h1>Environmental Engineering &amp; Science</h1>
+  <p>Fundamentals &amp; Sustainability Concepts · All Assignments (1–12)</p>
+</header>
+
+<div id="stats-bar">
+  <div class="stat-pill">Questions <span id="stat-total">0</span></div>
+  <div class="stat-pill">Answered <span id="stat-answered">0</span></div>
+  <div class="stat-pill">Correct <span id="stat-correct" style="color:#10b981">0</span></div>
+  <div class="stat-pill">Wrong <span id="stat-wrong" style="color:#ef4444">0</span></div>
+  <div class="progress-wrap">
+    <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+  </div>
+</div>
+
+<button id="jump-toggle">▾ Question Navigator</button>
+<div id="jump-nav"></div>
+
+<div id="filter-bar"></div>
+
+<div class="mode-row">
+  <label class="toggle-label">
+    <input type="checkbox" id="reveal-mode" checked>
+    Show answer after selection
+  </label>
+  <label class="toggle-label" style="margin-left:12px">
+    <input type="checkbox" id="shuffle-mode">
+    Shuffle options
+  </label>
+  <button class="btn btn-outline" id="btn-submit-all" style="margin-left:auto;padding:5px 16px;font-size:0.75rem">Submit All &amp; Score</button>
+  <button class="btn btn-outline" id="btn-reset" style="padding:5px 16px;font-size:0.75rem">Reset</button>
+</div>
+
+<div id="quiz-container">
+  <div id="score-panel">
+    <h2>Your Score</h2>
+    <div id="score-big">0%</div>
+    <p id="score-label"></p>
+    <div class="score-grid">
+      <div class="score-stat g"><div class="val" id="sc-correct">0</div><div class="lbl">Correct</div></div>
+      <div class="score-stat r"><div class="val" id="sc-wrong">0</div><div class="lbl">Wrong</div></div>
+      <div class="score-stat b"><div class="val" id="sc-skip">0</div><div class="lbl">Skipped</div></div>
+    </div>
+    <div class="action-row">
+      <button class="btn btn-primary" id="btn-retry">Retry Wrong Only</button>
+      <button class="btn btn-outline" id="btn-reset2">Full Reset</button>
+    </div>
+  </div>
+  <div id="questions-list"></div>
+</div>
+
+<script>
+const QUESTIONS = [
+  // ASSIGNMENT 1
+  {a:1,q:"The equation I = P × A × T signifies that environmental impact is a function of:",opts:["Pollution, Affluence, and Technology","Population, Affluence, and Technology","Production, Activity, and Time","Population, Agriculture, and Trade"],ans:1},
+  {a:1,q:"Compared to pre-Common Era human impacts, post-1800 environmental impacts are best described as:",opts:["Lower but widespread","Higher but localized","Exponentially higher and global","Stable and region-specific"],ans:2},
+  {a:1,q:"The ecological footprint of a population primarily measures:",opts:["Carbon emissions per capita","Economic consumption per capita","Land and water required to sustain a given lifestyle","Energy use per unit GDP"],ans:2},
+  {a:1,q:"Sustainability, according to the Triple Bottom Line, integrates:",opts:["Technology, policy, and economics","Environment, economy, and society","Growth, equity, and innovation","Energy, water, and materials"],ans:1},
+  {a:1,q:"The Brundtland Commission's definition of sustainable development emphasizes:",opts:["Economic growth without constraints","Environmental protection above all else","Technological efficiency as the key solution","Meeting present needs without compromising future needs"],ans:3},
+  {a:1,q:"The Montreal Protocol (1987) is best known for addressing:",opts:["Ozone-depleting substances","Greenhouse gas emissions","Hazardous waste management","Water pollution control"],ans:0},
+  {a:1,q:"In sustainability engineering, the design stage is critical because it:",opts:["Occurs after construction","Has minimal influence on outcomes","Is driven mainly by regulations","Offers maximum degrees of freedom for sustainable choices"],ans:3},
+  {a:1,q:"A key limitation of relying solely on efficiency improvements for sustainability is that:",opts:["Efficiency always increases costs","Efficiency ignores economic growth","Efficiency may lead to overuse of finite resources","Efficiency discourages innovation"],ans:2},
+  {a:1,q:"The Cuyahoga River fire (1969) significantly contributed to the establishment of:",opts:["Clean Water Act and EPA","Clean Air Act","Montreal Protocol","Kyoto Protocol"],ans:0},
+  {a:1,q:"Urban areas occupy approximately 1% of the Earth's land surface but contribute to nearly:",opts:["20–30% of global GHG emissions","40–50% of global GHG emissions","60–70% of anthropogenic GHG emissions","90% of global GHG emissions"],ans:2},
+  // ASSIGNMENT 2
+  {a:2,q:"The unit µg/m³ is most appropriately used for reporting pollutant concentrations in:",opts:["Soil","Surface water","Wastewater sludge","Air"],ans:3},
+  {a:2,q:"When converting gaseous concentrations between ppmv and µg/m³, which law is fundamentally required?",opts:["Dalton's law","Henry's law","Ideal gas law","Raoult's law"],ans:2},
+  {a:2,q:"In a gas mixture, the partial pressure of a component gas is proportional to its:",opts:["Mass fraction","Density","Mole (or volume) fraction","Molecular weight"],ans:2},
+  {a:2,q:"Molarity differs from molality because molarity depends on:",opts:["Mass of solvent","Temperature and volume","Molecular weight only","Number of equivalents"],ans:1},
+  {a:2,q:"Reporting nitrogen as mg N/L instead of mg/L of individual species is useful because it:",opts:["Eliminates analytical error","Accounts for all nitrogen forms on a common basis","Simplifies laboratory procedures","Avoids molecular weight calculations"],ans:1},
+  {a:2,q:"Volatile suspended solids (VSS) are primarily an indicator of:",opts:["Organic matter content","Inorganic salts","Dissolved solids","Turbidity alone"],ans:0},
+  {a:2,q:"The Method Detection Limit (MDL) represents:",opts:["The lowest instrument response","The regulatory threshold","The average concentration of samples","The minimum concentration measurable with 99% confidence"],ans:3},
+  {a:2,q:"When environmental data are log-normally distributed, the most appropriate measure of central tendency is the:",opts:["Arithmetic mean","Median","Mode","Geometric mean"],ans:3},
+  {a:2,q:"What is the partial pressure of CO₂ if its concentration is 420 ppmv and atmospheric pressure is 1 atm?",opts:["4.2 × 10⁻⁶ atm","4.2 × 10⁻⁴ atm","4.2 × 10⁻³ atm","4.2 × 10⁻² atm"],ans:1},
+  {a:2,q:"A mineral water analysis gives total cations = 1.0 × 10⁻³ eqv/L and total anions = 0.95 × 10⁻³ eqv/L. Is the analysis acceptable?",opts:["Yes","No","Cannot be determined","Only if bicarbonate is included"],ans:0},
+  // ASSIGNMENT 3
+  {a:3,q:"Assertion: Biomagnification does not violate the Second Law of Thermodynamics. Reason: Energy decreases between trophic levels, but matter can accumulate.",opts:["Both true, reason explains assertion","Both true, reason does not explain assertion","Assertion true, reason false","Both false"],ans:0},
+  {a:3,q:"A lower ecological footprint indicates:",opts:["Higher economic development","Higher population density","Greater consumption","Higher resource efficiency"],ans:3},
+  {a:3,q:"Which of the following best distinguishes an ecosystem from a community?",opts:["Ecosystem includes only biotic components","Community includes abiotic components","Community includes only producers","Ecosystem includes biotic and abiotic interactions"],ans:3},
+  {a:3,q:"In an aquatic ecosystem, an inverted biomass pyramid is observed. Which combination of conditions makes this possible without violating thermodynamic laws?",opts:["High producer biomass and low productivity","Low producer biomass with very high turnover rate","High consumer biomass with zero respiration losses","Equal productivity across all trophic levels"],ans:1},
+  {a:3,q:"Which ecological principle best explains why top carnivores are rare and vulnerable to extinction?",opts:["Second law of thermodynamics","Law of minimum","Competitive exclusion principle","Logistic growth limitation"],ans:0},
+  {a:3,q:"Which of the following statements is FALSE?",opts:["Population growth can slow while total population increases","Declining fertility always reduces median age","Aging populations increase dependency ratios","Growth rate approaching zero does not imply zero growth"],ans:1},
+  {a:3,q:"A reaction is exothermic but non-spontaneous at low temperature. Which condition must be true?",opts:["ΔH < 0 and ΔS < 0","ΔH > 0 and ΔS > 0","ΔH < 0 and ΔS > 0","ΔG is always negative"],ans:0},
+  {a:3,q:"For a first-order decay process, doubling the initial concentration will:",opts:["Double the half-life","Double the time to reach equilibrium","Not change the half-life","Increase the rate constant"],ans:2},
+  {a:3,q:"Activity coefficients deviate most significantly from unity when:",opts:["Ionic strength is low and ions are monovalent","Ionic strength is high and ions have high valence","Temperature is low","Concentration approaches zero"],ans:1},
+  {a:3,q:"Why are persistent organic pollutants (POPs) especially harmful at higher trophic levels?",opts:["High solubility in water","Rapid degradation","High lipid solubility and low metabolic breakdown","Low molecular weight"],ans:2},
+  // ASSIGNMENT 4
+  {a:4,q:"Which term in the general mass balance equation becomes zero for a completely mixed batch reactor?",opts:["Accumulation","Reaction","Inflow and outflow","Net generation"],ans:2},
+  {a:4,q:"If reaction order increases from first to second order in a batch reactor, the sensitivity of reaction rate to concentration:",opts:["Decreases","Remains constant","Increases","Becomes independent"],ans:2},
+  {a:4,q:"Which assumption uniquely defines a CSTR compared to a PFR?",opts:["No inflow","Plug-like velocity","Zero dispersion","Instantaneous complete mixing"],ans:3},
+  {a:4,q:"For a first-order reaction in a CSTR, increasing the reactor volume while keeping flow constant will:",opts:["Decrease effluent concentration","Increase effluent concentration","Have no effect","Increase influent concentration"],ans:0},
+  {a:4,q:"Which statement correctly distinguishes a PFR from a CSTR?",opts:["Reaction rate is uniform throughout","Concentration varies along reactor length","Effluent equals reactor concentration","Mixing dominates over advection"],ans:1},
+  {a:4,q:"Which energy term is irrelevant in a stationary water treatment tank?",opts:["Kinetic energy","Internal energy","Chemical energy","Heat energy"],ans:0},
+  {a:4,q:"Without greenhouse gases, Earth's surface temperature would be:",opts:["Higher than present","Same as present","Independent of radiation","Much lower than present"],ans:3},
+  {a:4,q:"Earth Overshoot Day shifting earlier indicates:",opts:["Reduced biocapacity","Increased regeneration rate","Decreasing consumption","Improved sustainability"],ans:0},
+  {a:4,q:"Which transport mechanism always acts to smooth concentration gradients?",opts:["Advection","Mechanical dispersion","Molecular diffusion","Gravitational settling"],ans:2},
+  {a:4,q:"Assertion: Stokes' law applies only at low Reynolds numbers. Reason: At low Reynolds numbers, viscous forces dominate over inertial forces.",opts:["Both true, reason explains assertion","Both true, reason does not explain assertion","Assertion true, reason false","Both false"],ans:0},
+  // ASSIGNMENT 5
+  {a:5,q:"Which statement most accurately distinguishes COD from BOD₅ in environmental systems?",opts:["COD measures only biodegradable organic matter, while BOD₅ measures total oxidizable matter","COD includes chemically oxidizable organic matter regardless of biodegradability","BOD₅ always exceeds COD for the same wastewater","COD represents oxygen used only by nitrifying bacteria"],ans:1},
+  {a:5,q:"In a receiving stream, a high CBOD but negligible NBOD will initially cause which dominant impact?",opts:["Rapid nitrification and nitrate accumulation","Immediate ammonia toxicity","Dissolved oxygen depletion due to heterotrophic oxidation","Sulfate reduction and methane formation"],ans:2},
+  {a:5,q:"Which oxygen demand term represents the maximum potential oxygen consumption assuming complete biodegradation?",opts:["BOD₅","CBOD","COD","BODᵤ"],ans:3},
+  {a:5,q:"A wastewater contains 150 mg/L of C(H₂O) and 25 mg/L of NH₃–N. The total ThOD is closest to:",opts:["274 mg/L","160 mg/L","325 mg/L","98 mg/L"],ans:0},
+  {a:5,q:"A BOD test dilution is considered invalid if:",opts:["DO depletion exceeds 2 mg/L","Initial DO is greater than 8 mg/L","Final DO falls below 2 mg/L","Incubation is done at 20 °C"],ans:2},
+  {a:5,q:"Which waterborne disease is correctly matched with its causative agent type?",opts:["Cholera – Virus","Hepatitis A – Protozoa","Giardiasis – Protozoa","Typhoid – Helminth"],ans:2},
+  {a:5,q:"Which biological treatment simultaneously achieves waste stabilization and energy recovery?",opts:["Composting","Bioremediation","Anaerobic digestion","Phytoremediation"],ans:2},
+  {a:5,q:"The largest global reservoir of carbon is:",opts:["Atmosphere","Biosphere","Hydrosphere","Lithosphere"],ans:3},
+  {a:5,q:"Why is atmospheric N₂ biologically unavailable to most organisms?",opts:["Low concentration","Strong triple bond between nitrogen atoms","Poor solubility in water","Rapid denitrification"],ans:1},
+  {a:5,q:"Which process converts organic nitrogen into ammonium (NH₄⁺)?",opts:["Nitrification","Denitrification","Nitrogen fixation","Ammonification"],ans:3},
+  // ASSIGNMENT 6
+  {a:6,q:"Risk is defined as:",opts:["The certainty of harm","The likelihood of harm","The avoidance of harm","The elimination of hazards"],ans:1},
+  {a:6,q:"Which effect types are included in risk definition?",opts:["Only acute","Only chronic","Both acute and chronic","Neither"],ans:2},
+  {a:6,q:"Risk management refers to:",opts:["Eliminating all hazards","Controlling or reducing risk","Ignoring small risks","Insurance settlements"],ans:1},
+  {a:6,q:"The cancer regulatory endpoint 'one in a million' equals:",opts:["1×10⁻³","1×10⁻⁶","1×10⁻⁹","1×10⁻¹²"],ans:1},
+  {a:6,q:"Hazard Index (HI) is defined as:",opts:["RfD/absorbed dose","Absorbed dose/RfD","RsD×RfD","RfD-RsD"],ans:1},
+  {a:6,q:"Category A projects need clearance from:",opts:["Local Panchayat","SEIAA","MoEF","SPCB"],ans:2},
+  {a:6,q:"Life Cycle Assessment (LCA) is governed by:",opts:["ISO 9001","ISO 14040","ISO 50001","BIS 1170"],ans:1},
+  {a:6,q:"Inventory analysis involves:",opts:["Only CO₂ emissions","Inputs/outputs across life cycle","Only manufacturing","Marketing data"],ans:1},
+  {a:6,q:"Impact categories in LCA include:",opts:["Global warming","Human toxicity","Acidification","All of the above"],ans:3},
+  {a:6,q:"Two design levers include minimizing:",opts:["Money and taxes","Materials and poor decisions","Materials and resource inputs","Labor and workforce"],ans:2},
+  // ASSIGNMENT 7
+  {a:7,q:"Which statement best explains the significance of watersheds in water resource management?",opts:["They control groundwater chemistry","They define political boundaries for water supply","They determine the natural drainage area contributing to a common outlet","They regulate rainfall intensity"],ans:2},
+  {a:7,q:"Which land cover is expected to produce the highest runoff coefficient?",opts:["Lawns and gardens","Single-family residential area","Paved streets","Parks and playgrounds"],ans:2},
+  {a:7,q:"Fire demand is characterized by:",opts:["Large annual volume and low discharge rate","Small annual volume and high discharge rate","Small annual volume and low discharge rate","Large annual volume and high discharge rate"],ans:1},
+  {a:7,q:"Which population forecasting method is most suitable for large, old cities with stable growth?",opts:["Geometrical increase method","Incremental increase method","Logistic curve method","Arithmetical increase method"],ans:3},
+  {a:7,q:"Turbidity in water is primarily caused by:",opts:["Dissolved gases","Dissolved salts","Suspended and colloidal particles","Microbial growth"],ans:2},
+  {a:7,q:"A catchment of 150 ha has 40% paved (C=0.85), 35% residential (C=0.45), 25% lawns (C=0.20). Rainfall intensity is 50 mm/h. Stormwater discharge is closest to:",opts:["7.2 m³/s","8.9 m³/s","10.4 m³/s","12.5 m³/s"],ans:2},
+  {a:7,q:"Population increased by 18,000; 22,000; 20,000 in last three decades. Present = 3,00,000. Population after 2 decades:",opts:["3.36 lakh","3.40 lakh","3.44 lakh","3.48 lakh"],ans:1},
+  {a:7,q:"If Ca²⁺ = 80 mg/L and Mg²⁺ = 36 mg/L, total hardness as CaCO₃ is closest to:",opts:["300 mg/L","350 mg/L","420 mg/L","480 mg/L"],ans:1},
+  {a:7,q:"A river sample has DO = 2 mg/L at 25°C (saturation ≈ 8 mg/L). This indicates:",opts:["Excellent water quality","Algal bloom","Organic pollution","Mineral contamination"],ans:2},
+  {a:7,q:"Which demand governs the design of distribution pipes in dense urban areas?",opts:["Average daily demand","Maximum daily demand","Maximum hourly demand","Fire demand + maximum daily demand"],ans:3},
+  // ASSIGNMENT 8
+  {a:8,q:"In discrete particle settling (Type I), how does the relationship between Vₛ and V₀ determine removal efficiency?",opts:["If Vₛ > V₀ the particle escapes the tank","If Vₛ < V₀, the particle is removed with efficiency Vₛ/V₀","If Vₛ < V₀, the particle is 100% removed","Removal efficiency is independent of overflow rate"],ans:1},
+  {a:8,q:"According to Stokes' Law, which change would most effectively increase settling velocity of a spherical particle?",opts:["Increasing dynamic viscosity","Doubling the diameter of the particle","Decreasing the density of the particle","Decreasing water temperature"],ans:1},
+  {a:8,q:"In coagulation, 'Zone 3' (restabilization) is primarily caused by:",opts:["Low pH preventing hydrolysis products","Formation of large precipitates enmeshing colloidal particles","Coagulant overdose reversing surface charge","Insufficient coagulant leading to weak charge neutralization"],ans:2},
+  {a:8,q:"Which distinguishes a Slow Sand Filter from a Rapid Sand Filter?",opts:["Rapid Sand Filters rely on 'Schmutzedecke' for biological treatment","Slow Sand Filters use finer sand and lower filtration rates","Slow Sand Filters require extensive chemical pretreatment","Rapid Sand Filters do not require backwashing"],ans:1},
+  {a:8,q:"If pH rises from 6.0 to 8.5 in chlorine disinfection, what is the expected impact?",opts:["Efficiency increases because OCl⁻ is stronger than HOCl","Efficiency decreases because HOCl dissociates to OCl⁻","Efficiency remains unchanged","Efficiency increases due to chloramine formation"],ans:1},
+  {a:8,q:"In the Breakpoint Chlorination 'dip' (Zone 3), what transformation is occurring?",opts:["Destruction of chloramines and chloro-organics by oxidation","Formation of monochloramines from ammonia and free chlorine","Reaction of chlorine with Iron and Manganese","Accumulation of free available chlorine residuals"],ans:0},
+  {a:8,q:"Calculate monthly bleaching powder requirement: 10 MLD, chlorine dose 0.6 mg/L, residual 0.2 mg/L, bleaching powder 30% available chlorine.",opts:["60 kg","200 kg","20 kg","600 kg"],ans:3},
+  {a:8,q:"Which disinfectant provides strongest oxidation but leaves little/no residual in the distribution system?",opts:["Free Chlorine (HOCl)","Chlorine Dioxide (ClO₂)","Ozone (O₃)","Chloramines"],ans:2},
+  {a:8,q:"Primary advantage of a Grid (looped) distribution system over Branching (dead-end) system:",opts:["Eliminates need for pumping stations","Requires simpler hydraulic design calculations","Significantly cheaper due to fewer pipes","Water can reach any point from at least two directions"],ans:3},
+  {a:8,q:"Rapid Sand Filter: 30 MLD, filtration rate 3000 L/h/m², backwash rate 6× filtration rate, 10 minutes, 5 filter units. Volume per backwash cycle?",opts:["41,666 L","83,320 L","5,957,380 L","249,960 L"],ans:3},
+  {a:8,q:"Primary purpose of 'Equalization Storage' in a distribution reservoir:",opts:["Settle remaining suspended solids","Allow plant to operate at constant rate despite fluctuating demand","Store water exclusively for fire-fighting","Increase chlorine contact time"],ans:1},
+  {a:8,q:"In combined chlorine system, Cl₂:NH₃-N ≈ 5:1 (by weight) predominantly forms:",opts:["Free Chlorine","Trichloramine (NCl₃)","Monochloramine (NH₂Cl)","Dichloramine (NHCl₂)"],ans:2},
+  {a:8,q:"Minimum recommended pipe diameter for fire-fighting demand in distribution systems:",opts:["50 mm","75 mm","100 mm","150 mm"],ans:3},
+  {a:8,q:"Elevated service reservoirs are primarily provided to:",opts:["Reduce turbidity","Store raw water","Provide pressure and equalization storage","Improve disinfection efficiency"],ans:2},
+  {a:8,q:"Which of the following is NOT a commonly used coagulant?",opts:["Aluminium sulphate","Ferric sulphate","Sodium sulphate","Calcium chloride"],ans:3},
+  // ASSIGNMENT 9
+  {a:9,q:"Critical operational disadvantage of a Combined Sewerage system compared to Separate System:",opts:["Small sewer size leads to frequent choking","Increases hydraulic and organic load on treatment plant during storms","Requires two sets of sewers, increasing capital investment","Sanitary sewage is highly concentrated"],ans:1},
+  {a:9,q:"Wastewater solids with particle size 1 µm to 10⁻³ µm. How classified and removal implication?",opts:["Settleable solids; removed via screening","Dissolved solids; require precipitation or biological uptake","Suspended solids; settle rapidly by gravity in primary sedimentation","Colloidal solids; require coagulation or biological treatment"],ans:3},
+  {a:9,q:"Which statement accurately reflects DO saturation vs temperature in standard oxygen curves?",opts:["DO saturation decreases as temperature increases; thermal pollution worsens oxygen deficiencies","DO saturation is independent of temperature","DO saturation increases linearly with temperature","Fresh water holds less oxygen than sea water at same temperature"],ans:0},
+  {a:9,q:"Primary technical justification for diluting wastewater sample in BOD₅ test:",opts:["Increase reaction rate constant by reducing toxic inhibitors","Ensure oxygen demand doesn't exhaust available DO, maintaining residual ≥1 mg/L","Ensure adequate nutrients for bacteria","Ensure final DO is zero indicating complete oxidation"],ans:1},
+  {a:9,q:"First stage vs second stage of oxygen demand in a standard BOD curve:",opts:["First stage is anaerobic; second is aerobic","First stage = carbonaceous demand; heterotrophic bacteria oxidize organic carbon to CO₂","First stage = oxidation of inorganic minerals; second = organic matter","First stage = nitrogenous demand; second = carbonaceous"],ans:1},
+  {a:9,q:"Calculate 5-day BOD: sample volume = 6 mL, dilution water = 294 mL, initial DO = 7.5 mg/L, final DO = 3.5 mg/L.",opts:["1200 mg/L","200 mg/L","100 mg/L","400 mg/L"],ans:1},
+  {a:9,q:"How does increased temperature affect Ultimate BOD (L₀) and reaction rate constant (K) per BOD kinetics?",opts:["K decreases due to enzyme denaturation; L₀ decreases","K increases, but L₀ remains constant","Both K and L₀ increase significantly","K remains constant; L₀ increases due to higher solubility"],ans:1},
+  {a:9,q:"In a Grit Chamber, if velocity drops significantly below 0.2–0.3 m/s range, primary consequence is:",opts:["Lighter organic matter settles with grit, leading to septic conditions","Oil and grease removal efficiency decreases","DO depletes rapidly due to lack of turbulence","Grit scoured from bottom passes to next treatment unit"],ans:0},
+  {a:9,q:"Which hydraulic device ensures constant flow velocity in a grit chamber despite discharge variations?",opts:["V-Notch Weir","Proportional Weir (Sutro Weir)","Broad Crested Weir","Sluice Gate"],ans:1},
+  {a:9,q:"'Population Equivalent' in wastewater engineering is used to:",opts:["Express industrial wastewater strength in terms of equivalent number of people producing that BOD","Determine bacteria required to treat sewage","Calculate census population based on water consumption","Estimate hydraulic retention time for primary sedimentation"],ans:0},
+  {a:9,q:"Primary mechanism of pollutant removal in a Trickling Filter:",opts:["Adsorption onto microbial slime layer then aerobic oxidation","Anaerobic digestion in deep voids of filter bed","Physical filtration through small pores of rock media","Chemical oxidation using atmospheric oxygen catalyzed by sunlight"],ans:0},
+  {a:9,q:"'Ponding' in a trickling filter: what is it and how remediated?",opts:["Clogging by algae/fungi; remedied by adding Chlorine or Copper Sulphate","Grit accumulation; remedied by increasing grit chamber velocity","Filter drying out; remedied by increasing recirculation","Surface pools from hydraulic overloading; remedied by reducing influent flow"],ans:0},
+  {a:9,q:"Which is NOT a primary benefit of recirculation in a trickling filter?",opts:["Accelerates biological oxidation","Seeds incoming raw sewage with active bacteria","Helps reduce odors and fly nuisance","Reduces hydraulic load on filter to prevent scouring"],ans:3},
+  {a:9,q:"Which type of settling characterizes Primary Sedimentation Tanks treating raw sewage?",opts:["Type III: Zone Settling","Type IV: Compression Settling","Type II: Flocculent Settling","Type I: Discrete Particle Settling"],ans:2},
+  {a:9,q:"Why are Parshall Flumes often preferred over weirs in inlet channels of wastewater treatment plants?",opts:["They can filter out fine particles","They create high head loss useful for mixing","They are self-cleaning and cause less head loss compared to weirs","They are cheaper to construct"],ans:2},
+  // ASSIGNMENT 10
+  {a:10,q:"Primary operational consequence of maintaining very low F/M ratio over extended period in ASP:",opts:["Rapid exponential growth leading to high sludge production","Improved settling due to dense pin-point flocs","Significant decrease in hydraulic retention time","Development of filamentous bacteria (bulking) and endogenous respiration"],ans:3},
+  {a:10,q:"SVI given MLSS=3000 mg/L, SV₃₀=300 mL. What does result indicate?",opts:["SVI=200 mL/g; sludge is bulking","SVI=100 mL/g; sludge has good settling characteristics","SVI=900 mL/g; requires immediate chlorination","SVI=10 mL/g; settling too fast (pin-point flocs)"],ans:1},
+  {a:10,q:"Which bacterial growth phase is targeted for conventional ASP design to ensure low effluent BOD and good settling?",opts:["Declining Growth / Endogenous Phase","Log-Growth Phase","Lag Phase","Stationary Phase only"],ans:0},
+  {a:10,q:"Correct order of Integrated Solid Waste Management hierarchy (most to least preferred):",opts:["Landfilling > Recycling > Composting > Source Reduction","Source Reduction > Recycling/Composting > Waste-to-Energy > Landfilling","Recycling > Reduction > Landfilling > Combustion","Combustion > Source Reduction > Recycling > Landfilling"],ans:1},
+  {a:10,q:"Proximate Analysis of solid waste determines:",opts:["Density, Permeability, Porosity, Field Capacity","Carbon, Hydrogen, Oxygen, Nitrogen, Sulfur","Lipids, Proteins, Carbohydrates, Fibers","Moisture, Volatile Matter, Fixed Carbon, Ash"],ans:3},
+  {a:10,q:"The 'Methanogenic Phase' of anaerobic decomposition in a landfill is characterized by:",opts:["Drop in pH due to VFA accumulation","Rapid leaching of heavy metals due to acidic conditions","High concentrations of oxygen and aerobic respiration","Rise in pH to near neutral and significant production of CH₄ and CO₂"],ans:3},
+  {a:10,q:"A 'Hauled Container System' (HCS) is generally most economical when:",opts:["Manpower is very expensive","Waste generation rates are high and containers are large","Waste generation is low and containers are small","Disposal site is extremely far away"],ans:1},
+  {a:10,q:"Optimal C/N ratio range for rapid and odor-free composting:",opts:["10–15","50–60","100+","25–30"],ans:3},
+  {a:10,q:"Leachate from an 'old/stabilized' landfill (>10 years) typically exhibits:",opts:["High BOD/COD ratio (>0.5) and acidic pH","High concentration of Volatile Fatty Acids","Low BOD/COD ratio (<0.1) and neutral to basic pH","Low concentration of ammonia nitrogen"],ans:2},
+  {a:10,q:"For solid waste combustion, the '3 Ts' required for efficient destruction of organics are:",opts:["Turbulence, Total Solids, Time","Temperature, Transfer, Torque","Time, Toxicity, Temperature","Time, Temperature, Turbulence"],ans:3},
+  {a:10,q:"Waste: 50% organic (4000 kcal/kg), 50% inert. Energy value of total mixed waste per kg?",opts:["4000 kcal/kg","2000 kcal/kg","8000 kcal/kg","18000 kcal/kg"],ans:1},
+  {a:10,q:"City: 35,000 people, 180 lpcd, BOD=220 mg/L. Total daily BOD load entering treatment plant?",opts:["1,386 kg/day","630 kg/day","7,700 kg/day","3,500 kg/day"],ans:0},
+  {a:10,q:"Sludge moisture content: from 98% to 92% after digestion. Percentage reduction in sludge volume?",opts:["6%","50%","75%","92%"],ans:2},
+  {a:10,q:"Symbiotic relationship in an Oxidation Pond primarily involves:",opts:["Fungi and Protozoa","Algae and Bacteria","Aerobic and Anaerobic bacteria","Zooplankton and Fish"],ans:1},
+  {a:10,q:"Most economical collection system for large waste volumes at high rates (e.g., construction sites)?",opts:["Stationary Container System (SCS)","Hauled Container System (HCS)","Curb-side manual collection","Backyard pickup"],ans:1},
+  // ASSIGNMENT 11
+  {a:11,q:"Which of the following is NOT a criterion pollutant as per NAAQS?",opts:["Carbon monoxide","Sulfur dioxide","Carbon dioxide","Lead"],ans:2},
+  {a:11,q:"Which secondary pollutant causes eye irritation and is a classic sign of Photochemical Smog?",opts:["Sulfuric Acid","Peroxyacetyl Nitrate","Methane","Carbon monoxide"],ans:1},
+  {a:11,q:"Convert CO concentration of 10 ppm to µg/m³ at 25°C and 1 atm (MW of CO = 28 g/mol):",opts:["11,450 µg/m³","11.450 µg/m³","280 µg/m³","1000 µg/m³"],ans:0},
+  {a:11,q:"During adiabatic expansion of dry air, the Dry Adiabatic Lapse Rate (DALR) is:",opts:["6.5 °C/km","9.8 °C/km","5.5 °C/km","1.0 °C/km"],ans:0},
+  {a:11,q:"If the Environmental Lapse Rate (ELR) is less than the Adiabatic Lapse Rate (ALR), the atmosphere is:",opts:["Unstable (Super-adiabatic)","Stable (Sub-adiabatic)","Neutral","Inversion"],ans:1},
+  {a:11,q:"Which plume behavior occurs during temperature inversion (negative ELR), spreading horizontally?",opts:["Looping","Fanning","Coning","Fumigation"],ans:1},
+  {a:11,q:"Most suitable control device for removing gaseous pollutants like SO₂ from industrial exhaust:",opts:["Cyclone Separator","Electrostatic Precipitator","Fabric Filter","Wet Scrubber"],ans:3},
+  {a:11,q:"For removing very fine particulate matter (<1 µm) with high efficiency (>99%), which device is preferred?",opts:["Gravity Settling Chamber","Cyclone Separator","Fabric Filter","Spray Tower"],ans:2},
+  {a:11,q:"Two identical noise sources of 50 dB each added together. Resulting total sound level:",opts:["33 dB","43 dB","53 dB","63 dB"],ans:2},
+  {a:11,q:"Standard equivalent noise level (L_eq) limit for a 'Silence Zone' near hospitals during daytime in India:",opts:["75 dB","65 dB","50 dB","40 dB"],ans:2},
+  // ASSIGNMENT 12
+  {a:12,q:"Which factor made Cape Town's water supply vulnerable to the 'Day Zero' crisis?",opts:["Overdependence on desalination plants","High groundwater abstraction","Lack of diversification in water supply sources","Excess agricultural water pricing"],ans:2},
+  {a:12,q:"The term 'virtual water' primarily refers to:",opts:["Export of treated wastewater","Export of desalinated water","Export of water embedded in commodities and services","Export of bottled drinking water"],ans:2},
+  {a:12,q:"Primary factors for success of the Panaji source separation program:",opts:["Removal of community bins and strict penalties","Strong public engagement, sound financial management, and institutional commitment","Advanced waste-to-energy technologies and private sector participation","Door-to-door collection and decentralized composting"],ans:1},
+  {a:12,q:"At Bhopal UCIL plant, which normal safety feature later played a critical role in the scale of the disaster?",opts:["On-site synthesis of MIC in open atmospheric tanks","Immediate chemical conversion of MIC into final pesticides","Dilution of MIC with less reactive solvents","Pressurized storage of liquid MIC using inert nitrogen gas"],ans:3},
+  {a:12,q:"Primary physiological causes of death immediately after MIC exposure in Bhopal gas tragedy:",opts:["Cardiac arrhythmia and renal failure","Pulmonary oedema and circulatory collapse","Liver necrosis and anaemia","Neurotoxicity and paralysis"],ans:1},
+  {a:12,q:"'Food loss' differs from 'food waste' mainly in that food loss:",opts:["Occurs only at the consumer level","Is intentional disposal of edible food","Occurs before food reaches consumers due to systemic inefficiencies","Refers exclusively to post-harvest losses"],ans:2},
+  {a:12,q:"Most effective combination for long-term reduction of marine litter:",opts:["Reducing plastics, improving solid waste management, and increasing capture/recycling/reuse","Large-scale ocean clean-up operations","Burning plastic waste at sea","Sinking plastic debris to the ocean floor"],ans:0},
+  {a:12,q:"Reducing food loss and waste directly contributes to which SDGs?",opts:["SDG 7","SDG 9","SDG 1, SDG 2, SDG 12, and SDG 13","SDG 16"],ans:2},
+  {a:12,q:"In the Target–Measure–Act framework, the 'Measure' step primarily enables:",opts:["Identification of where and how much food is lost or wasted","Implementation of waste treatment technologies","Behaviour changes through awareness campaigns","Enforcement of food waste regulations"],ans:0},
+  {a:12,q:"Which feature distinguishes hydrothermal carbonization (HTC) from most other waste-to-energy technologies?",opts:["Requires no thermal energy for operation","Operates only under ambient pressure","Can process wet biomass without additional energy for drying","Converts organic waste directly into gaseous fuel"],ans:2},
+];
+
+let state = {};
+let filtered = [];
+let currentFilter = 0;
+
+function initState() {
+  state = {};
+  QUESTIONS.forEach((q, i) => { state[i] = { answered: false, selected: null, correct: null }; });
+}
+
+function getAssignments() {
+  const set = new Set(QUESTIONS.map(q => q.a));
+  return Array.from(set).sort((a,b)=>a-b);
+}
+
+function buildFilters() {
+  const bar = document.getElementById('filter-bar');
+  bar.innerHTML = '';
+  const all = document.createElement('button');
+  all.className = 'filter-btn active';
+  all.textContent = 'All (' + QUESTIONS.length + ')';
+  all.dataset.a = 0;
+  all.onclick = () => applyFilter(0);
+  bar.appendChild(all);
+  getAssignments().forEach(a => {
+    const cnt = QUESTIONS.filter(q=>q.a===a).length;
+    const btn = document.createElement('button');
+    btn.className = 'filter-btn';
+    btn.textContent = 'Assignment ' + a + ' (' + cnt + ')';
+    btn.dataset.a = a;
+    btn.onclick = () => applyFilter(a);
+    bar.appendChild(btn);
+  });
+}
+
+function applyFilter(a) {
+  currentFilter = a;
+  document.querySelectorAll('.filter-btn').forEach(b => {
+    b.classList.toggle('active', parseInt(b.dataset.a) === a);
+  });
+  filtered = a === 0 ? QUESTIONS.map((_,i)=>i) : QUESTIONS.map((_,i)=>i).filter(i=>QUESTIONS[i].a===a);
+  renderQuestions();
+  document.getElementById('score-panel').classList.remove('visible');
+}
+
+function shuffle(arr) {
+  const a = [...arr];
+  for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}
+  return a;
+}
+
+function renderQuestions() {
+  const list = document.getElementById('questions-list');
+  list.innerHTML = '';
+  if(!filtered.length){ list.innerHTML='<div class="no-results">No questions found.</div>'; return; }
+
+  const shuffleOpts = document.getElementById('shuffle-mode').checked;
+
+  filtered.forEach((qIdx, displayIdx) => {
+    const q = QUESTIONS[qIdx];
+    const s = state[qIdx];
+    const card = document.createElement('div');
+    card.className = 'q-card' + (s.answered ? (s.correct ? ' correct' : ' wrong') : '');
+    card.id = 'card-' + qIdx;
+
+    let optIndices = q.opts.map((_,i)=>i);
+    let shuffleMap = optIndices;
+    if(shuffleOpts && !s.answered) { shuffleMap = shuffle(optIndices); }
+
+    const corrLabel = ['A','B','C','D'][q.ans];
+
+    card.innerHTML = `
+      <div class="q-meta">
+        <span class="q-num">Q${displayIdx+1}</span>
+        <span class="q-assign">Assignment ${q.a}</span>
+      </div>
+      <p class="q-text">${q.q}</p>
+      <div class="options" id="opts-${qIdx}"></div>
+      <div class="result-badge ${s.answered ? 'show ' + (s.correct?'ok':'no') : ''}" id="badge-${qIdx}">
+        ${s.answered ? (s.correct ? '<span class="check-icon"></span>Correct!' : '<span class="cross-icon"></span>Incorrect — correct: ' + corrLabel) : ''}
+      </div>`;
+
+    list.appendChild(card);
+
+    const optsDiv = card.querySelector('#opts-'+qIdx);
+    shuffleMap.forEach(optI => {
+      const label = ['A','B','C','D'][optI];
+      const btn = document.createElement('button');
+      btn.className = 'option-btn';
+      if(s.answered) {
+        btn.disabled = true;
+        if(optI === q.ans) btn.classList.add('correct-ans');
+        else if(s.selected === optI) btn.classList.add('wrong-ans');
+      }
+      if(s.selected === optI && !s.answered) btn.classList.add('selected');
+      btn.innerHTML = `<span class="opt-label">${label}</span><span>${q.opts[optI]}</span>`;
+      btn.onclick = () => handleAnswer(qIdx, optI);
+      optsDiv.appendChild(btn);
+    });
+  });
+
+  buildJumpNav();
+  updateStats();
+}
+
+function handleAnswer(qIdx, optI) {
+  const s = state[qIdx];
+  const reveal = document.getElementById('reveal-mode').checked;
+  if(s.answered && reveal) return;
+
+  s.selected = optI;
+  if(reveal) {
+    s.answered = true;
+    s.correct = (optI === QUESTIONS[qIdx].ans);
+  }
+
+  const card = document.getElementById('card-'+qIdx);
+  if(!card) return;
+
+  if(reveal) {
+    card.className = 'q-card answered ' + (s.correct ? 'correct' : 'wrong');
+    const badge = document.getElementById('badge-'+qIdx);
+    const corrLabel = ['A','B','C','D'][QUESTIONS[qIdx].ans];
+    badge.className = 'result-badge show ' + (s.correct ? 'ok' : 'no');
+    badge.innerHTML = s.correct
+      ? '<span class="check-icon"></span>Correct!'
+      : '<span class="cross-icon"></span>Incorrect — correct: ' + corrLabel;
+    card.querySelectorAll('.option-btn').forEach(btn => {
+      btn.disabled = true;
+      const lbl = btn.querySelector('.opt-label').textContent;
+      const bIdx = ['A','B','C','D'].indexOf(lbl);
+      if(bIdx === QUESTIONS[qIdx].ans) btn.classList.add('correct-ans');
+      else if(bIdx === optI) btn.classList.add('wrong-ans');
+    });
+  } else {
+    card.querySelectorAll('.option-btn').forEach(btn => btn.classList.remove('selected'));
+    const buttons = card.querySelectorAll('.option-btn');
+    buttons.forEach(btn => {
+      const lbl = btn.querySelector('.opt-label').textContent;
+      const bIdx = ['A','B','C','D'].indexOf(lbl);
+      if(bIdx === optI) btn.classList.add('selected');
+    });
+  }
+
+  updateStats();
+  buildJumpNav();
+}
+
+function submitAll() {
+  filtered.forEach(qIdx => {
+    const s = state[qIdx];
+    if(!s.answered) {
+      if(s.selected !== null) { s.answered=true; s.correct=(s.selected===QUESTIONS[qIdx].ans); }
+    }
+  });
+  renderQuestions();
+  showScore();
+}
+
+function showScore() {
+  const panel = document.getElementById('score-panel');
+  panel.classList.add('visible');
+  panel.scrollIntoView({behavior:'smooth',block:'start'});
+  const total = filtered.length;
+  const correct = filtered.filter(i=>state[i].correct===true).length;
+  const wrong = filtered.filter(i=>state[i].answered && state[i].correct===false).length;
+  const skip = filtered.filter(i=>!state[i].answered).length;
+  const pct = total ? Math.round(correct/total*100) : 0;
+  document.getElementById('score-big').textContent = pct + '%';
+  document.getElementById('score-label').textContent = correct + ' correct out of ' + total + ' questions';
+  document.getElementById('sc-correct').textContent = correct;
+  document.getElementById('sc-wrong').textContent = wrong;
+  document.getElementById('sc-skip').textContent = skip;
+}
+
+function updateStats() {
+  const total = filtered.length;
+  const answered = filtered.filter(i=>state[i].answered).length;
+  const correct = filtered.filter(i=>state[i].correct===true).length;
+  const wrong = filtered.filter(i=>state[i].answered && state[i].correct===false).length;
+  document.getElementById('stat-total').textContent = total;
+  document.getElementById('stat-answered').textContent = answered;
+  document.getElementById('stat-correct').textContent = correct;
+  document.getElementById('stat-wrong').textContent = wrong;
+  document.getElementById('progress-fill').style.width = (total ? (answered/total*100) : 0) + '%';
+}
+
+function buildJumpNav() {
+  const nav = document.getElementById('jump-nav');
+  nav.innerHTML = '';
+  filtered.forEach((qIdx, di) => {
+    const s = state[qIdx];
+    const dot = document.createElement('button');
+    dot.className = 'jump-dot' + (s.answered ? (s.correct ? ' correct' : ' wrong') : (s.selected!==null?' answered':''));
+    dot.textContent = di+1;
+    dot.title = 'Q'+(di+1)+' – Assignment '+QUESTIONS[qIdx].a;
+    dot.onclick = () => {
+      document.getElementById('card-'+qIdx)?.scrollIntoView({behavior:'smooth',block:'center'});
+    };
+    nav.appendChild(dot);
+  });
+}
+
+function resetAll() {
+  initState();
+  document.getElementById('score-panel').classList.remove('visible');
+  renderQuestions();
+}
+
+// INIT
+initState();
+buildFilters();
+applyFilter(0);
+
+document.getElementById('btn-submit-all').onclick = submitAll;
+document.getElementById('btn-reset').onclick = resetAll;
+document.getElementById('btn-reset2').onclick = resetAll;
+document.getElementById('btn-retry').onclick = () => {
+  filtered.filter(i=>state[i].correct===false).forEach(i=>{ state[i]={answered:false,selected:null,correct:null}; });
+  document.getElementById('score-panel').classList.remove('visible');
+  renderQuestions();
+};
+document.getElementById('jump-toggle').onclick = () => {
+  document.getElementById('jump-nav').classList.toggle('open');
+};
+document.getElementById('reveal-mode').onchange = () => renderQuestions();
+document.getElementById('shuffle-mode').onchange = () => renderQuestions();
+</script>
+</body>
+</html>
